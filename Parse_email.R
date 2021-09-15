@@ -8,11 +8,9 @@ library(lubridate)
 library(anytime)
 library(vroom)
 library(tidyverse)
-library(parallel)
-library(RCurl)
 
 path <- '/Users/admin/Downloads/client_secret_155938939393_dechm9o534tvupcu3nt34ivfcr2greqq_apps.json'
-
+#find messages with attachments in GMail
 find_messages <- function(path){
   gm_auth_configure(path = path)
   gm_auth()   
@@ -23,7 +21,7 @@ find_messages <- function(path){
   fwrite(data.table(id=c(new)), append = TRUE, file = "/Users/admin/Downloads/PAZ-cache2.csv")
   return(data)
 }
-
+#format data
 data_processing <- function(data){
   data <- gm_message(new$id)$payload$parts[[2]]$filename %>%
   vroom(col_names = c("deviceId", "meterID", "date", "time", "ws", "energy"), col_types = "character" )%>%
@@ -40,7 +38,7 @@ sql_connect <- function(sql_query){
   dbDisconnect()
   return(data)
 } 
-
+#send email to client
 email_sender <- function(sender_email_id,sender_password,email_message,recipients,host,subject){
   body = email_message
   msg <- gm_mime()%>%
@@ -53,7 +51,7 @@ email_sender <- function(sender_email_id,sender_password,email_message,recipient
     1%>%
     gm_send_message() 
 }
-
+#run job in UI with new data
 runjob <- function(){
   resp <- POST(url = '' ,
                add_headers(
